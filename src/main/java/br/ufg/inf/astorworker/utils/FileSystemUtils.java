@@ -11,17 +11,17 @@ import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 
 public class FileSystemUtils {
-	
-	public static File createTemporaryCopyDirectory(File directory) throws Exception {
-		File tmpDirectory = FileUtils.getTempDirectory();
-		FileUtils.deleteDirectory(new File(tmpDirectory.getAbsolutePath() + File.separator + directory.getName()));
-		FileUtils.copyDirectoryToDirectory(directory, tmpDirectory);
-		return new File(tmpDirectory.getAbsolutePath() + File.separator + directory.getName());
-	}
 
-	private static void getAllPermissions(File file) throws Exception {
-	    Set<PosixFilePermission> perms = Files.readAttributes(file.toPath(),PosixFileAttributes.class).permissions();
-		perms.add(PosixFilePermission.OWNER_WRITE);
+    public static File createTemporaryCopyDirectory(File directory) throws Exception {
+        File tmpDirectory = FileUtils.getTempDirectory();
+        FileUtils.deleteDirectory(new File(tmpDirectory.getAbsolutePath() + File.separator + directory.getName()));
+        FileUtils.copyDirectoryToDirectory(directory, tmpDirectory);
+        return new File(tmpDirectory.getAbsolutePath() + File.separator + directory.getName());
+    }
+
+    private static void getAllPermissions(File file) throws Exception {
+        Set<PosixFilePermission> perms = Files.readAttributes(file.toPath(),PosixFileAttributes.class).permissions();
+        perms.add(PosixFilePermission.OWNER_WRITE);
         perms.add(PosixFilePermission.OWNER_READ);
         perms.add(PosixFilePermission.OWNER_EXECUTE);
         perms.add(PosixFilePermission.GROUP_WRITE);
@@ -31,39 +31,46 @@ public class FileSystemUtils {
         perms.add(PosixFilePermission.OTHERS_READ);
         perms.add(PosixFilePermission.OTHERS_EXECUTE);
         Files.setPosixFilePermissions(file.toPath(), perms);
-	}
+    }
 
-	public static void getPermissionsForDirectory(File directory) throws Exception {
+    public static void getPermissionsForDirectory(File directory) throws Exception {
 
-		ArrayList<File> files = new ArrayList<>(Arrays.asList(directory.listFiles()));
-
-    	for (File child : files){
-    		if(child.isDirectory())
-    			getPermissionsForDirectory(child);
-
-    		getAllPermissions(child);
-   	 	}
-
-   	 	getAllPermissions(directory);
-	}
-
-	public static List<String> findFilesWithExtension(File directory, String extension, boolean fullPath) throws Exception {
-        ArrayList<String> filesFound = new ArrayList<>();
         ArrayList<File> files = new ArrayList<>(Arrays.asList(directory.listFiles()));
 
         for (File child : files){
             if(child.isDirectory())
-                filesFound.addAll(findFilesWithExtension(child, extension, fullPath));
+                getPermissionsForDirectory(child);
 
-            if(child.getName().contains("." + extension)){
-                if(fullPath)
-                    filesFound.add(child.getAbsolutePath());
-                else
-                    filesFound.add(child.getName());
-            }
+            getAllPermissions(child);
         }
 
-        return filesFound;
+        getAllPermissions(directory);
+    }
+
+    public static List<String> findFilesWithExtension(File directory, String extension, boolean fullPath) throws Exception {
+        if (directory.exists() && directory.isDirectory() && directory.canRead()) {
+            ArrayList<String> filesFound = new ArrayList<>();
+
+            ArrayList<File> files = new ArrayList<>(Arrays.asList(directory.listFiles()));
+
+            for (File child : files) {
+                if (child.isDirectory())
+                    filesFound.addAll(findFilesWithExtension(child, extension, fullPath));
+
+                if (child.getName().contains("." + extension)) {
+                    if (fullPath)
+                        filesFound.add(child.getAbsolutePath());
+                    else
+                        filesFound.add(child.getName());
+                }
+            }
+
+            return filesFound;
+        } else {
+            String canRead = directory.canRead() ? "true" : "false";
+            System.out.println("Directory is " + directory.getAbsolutePath());
+            throw new Exception("Directory " + directory + " exist " + directory.exists() + "isn't a directory " + directory.isDirectory() + "or can't be read " + canRead);
+        }
     }
 
     public static void findFilesWithExtensionAndDelete(File directory, String extension) throws Exception {
@@ -79,13 +86,17 @@ public class FileSystemUtils {
     }
 
     public static List<String> listContentsDirectory(File directory) throws Exception {
-        ArrayList<String> filesFound = new ArrayList<>();
-        ArrayList<File> files = new ArrayList<>(Arrays.asList(directory.listFiles()));
+        try{
+            ArrayList<String> filesFound = new ArrayList<>();
+            ArrayList<File> files = new ArrayList<>(Arrays.asList(directory.listFiles()));
 
-        for (File child : files)
-            filesFound.add(child.getName());
-        
-        return filesFound;
+            for (File child : files)
+                filesFound.add(child.getName());
+
+            return filesFound;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     /* Replace '/' with the correct file separator */
