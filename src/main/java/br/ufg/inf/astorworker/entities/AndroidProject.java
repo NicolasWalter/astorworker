@@ -122,7 +122,7 @@ public class AndroidProject {
 	}
 
 	private void extractAAR(String libLocation) throws Exception {
-		List<String> output;
+		List<String> output = new ArrayList<>();
 		try {
 			output = FileSystemUtils.findFilesWithExtension(new File(libLocation), "aar", false);
 		} catch(Exception e) {
@@ -135,7 +135,9 @@ public class AndroidProject {
 			}
 			return;
 		}
-
+//		if (output.isEmpty()) {
+//			output = FileSystemUtils.findFilesWithExtension(new File(libLocation), "aar", false);
+//		}
 		for(String aar : output){
 			String aarFolder = aar.split(".aar")[0];
 			File aarDirectory = new File(FileSystemUtils.fixPath(libLocation + "/" + aarFolder));
@@ -162,18 +164,19 @@ public class AndroidProject {
 		out.write("\n\tmavenLocal()\n}\n\n");
 
 
-		BufferedReader in = new BufferedReader(new FileReader("save.gradle"));
-		String line;
-		while ((line = in.readLine()) != null)
-			out.write("\n" + line);
-
-		in.close();
-		out.close();
-
-		AndroidToolsExecutorProcess.runGradleTask(projectAbsolutePath, "saveDependencies", true);
-		checkDataBinding();
-
-		extractAAR(projectAbsolutePath + "/" + mainFolder + "/localrepo");
+//		BufferedReader in = new BufferedReader(new FileReader("save.gradle"));
+//		String line;
+//		while ((line = in.readLine()) != null)
+//			out.write("\n" + line);
+//
+//		in.close();
+//		out.close();
+//
+//		//AndroidToolsExecutorProcess.runGradleTask(projectAbsolutePath, "saveDependencies", true);
+//		System.out.println("saveDependencies corrió bien!");
+//		checkDataBinding();
+//		System.out.println("ya pasó el checkdatabinding");
+//		extractAAR(projectAbsolutePath + "/" + mainFolder + "/localrepo");
 	}
 
 	private List<String> findSubprojects() throws Exception {
@@ -204,7 +207,7 @@ public class AndroidProject {
 		saveDependenciesLocally();
 
 		String dependencies = "";
-		List<String> output = FileSystemUtils.findFilesWithExtension(new File(projectAbsolutePath), "jar", true);
+		List<String> output = new ArrayList<>();//FileSystemUtils.findFilesWithExtension(new File(projectAbsolutePath), "jar", true);
 
 		for(String entry : output)
 			dependencies += entry + System.getProperty("path.separator");
