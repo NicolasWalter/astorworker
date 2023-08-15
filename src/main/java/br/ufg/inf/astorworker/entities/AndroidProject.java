@@ -113,7 +113,7 @@ public class AndroidProject {
 	} 
 
 	private String findFlavor() throws Exception {
-		List<String> output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes"));
+		List<String> output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac"));
 		ArrayList<String> flavors = new ArrayList<String>();
 
 		for(String entry : output){
@@ -158,16 +158,16 @@ public class AndroidProject {
 		out.write("\n\tmavenLocal()\n}\n\n");
 		
 
-		BufferedReader in = new BufferedReader(new FileReader("save.gradle"));
-		String line;
-		while ((line = in.readLine()) != null) 
-            out.write("\n" + line);
-
-        in.close();
+//		BufferedReader in = new BufferedReader(new FileReader("save.gradle"));
+//		String line;
+//		while ((line = in.readLine()) != null)
+//            out.write("\n" + line);
+//
+//        in.close();
    		out.close();
 
-   		AndroidToolsExecutorProcess.runGradleTask(projectAbsolutePath, "saveDependencies", true);
-   		checkDataBinding();
+//   		AndroidToolsExecutorProcess.runGradleTask(projectAbsolutePath, "saveDependencies", true);
+//   		checkDataBinding();
 
    		extractAAR(projectAbsolutePath + "/" + mainFolder + "/localrepo");
 	}
@@ -194,7 +194,7 @@ public class AndroidProject {
 		logger.info("Finding dependencies");
 		saveDependenciesLocally();
 
-		String dependencies = "";
+		dependencies = "";
 		List<String> output = FileSystemUtils.findFilesWithExtension(new File(projectAbsolutePath), "jar", true);
 
 		for(String entry : output)
@@ -202,14 +202,15 @@ public class AndroidProject {
 
 		AndroidToolsExecutorProcess.compileProject(projectAbsolutePath);
 
-		output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/"));
+		output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/"));
 
+		dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug") + System.getProperty("path.separator");
 		for(String entry : output){
 			if(entry.equals("debug"))
-				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/debug/") + System.getProperty("path.separator");
+				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/debug/classes/") + System.getProperty("path.separator");
 
 			else if(!entry.equals("release")){
-				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/" + entry + "/debug/") + System.getProperty("path.separator");
+				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/" + entry + "/classes/") + System.getProperty("path.separator");
 			}
 		}
 
