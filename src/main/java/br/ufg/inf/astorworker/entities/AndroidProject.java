@@ -87,8 +87,8 @@ public class AndroidProject {
 		compileVersion = findCompileVersion();
 		logger.info("Compile version: " + compileVersion);
 		
-		unitTestTask = findTask(unitTaskPattern);
-		instrumentationTestTask = findTask(instrumentationTaskPattern);
+		unitTestTask = "testDebugDistUnitTest";//findTask(unitTaskPattern);
+		instrumentationTestTask = "connectedDebugAndroidTest";//findTask(instrumentationTaskPattern);
 		activateTestLogging();
 
 		subprojects = findSubprojects();
