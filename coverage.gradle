@@ -47,8 +47,8 @@ productFlavors.each { productFlavorName ->
             group = "Reporting"
             description = "Generate Jacoco coverage reports on the ${sourceName.capitalize()} build."
 
-            classDirectories = fileTree(
-                    dir: "${project.buildDir}/intermediates/classes/${sourcePath}",
+            classDirectories.setFrom(fileTree(
+                    dir: "${project.buildDir}/intermediates/javac/${sourcePath}/classes",
                     excludes: ['**/R.class',
                                '**/R$*.class',
                                '**/*$ViewInjector*.*',
@@ -56,16 +56,16 @@ productFlavors.each { productFlavorName ->
                                '**/BuildConfig.*',
                                '**/Manifest*.*',
                                '**/*$Lambda$*.class']
-            )
+            ))
+
 
             def coverageSourceDirs = [
                     "src/main/java",
                     "src/$productFlavorName/java",
                     "src/$buildTypeName/java"
             ]
-            additionalSourceDirs = files(coverageSourceDirs)
-            sourceDirectories = files(coverageSourceDirs)
-            executionData = files("${project.buildDir}/jacoco/${testTaskName}.exec")
+            sourceDirectories.setFrom(files(coverageSourceDirs))
+            executionData.setFrom(files("${project.buildDir}/jacoco/${testTaskName}.exec"))
             
             reports {
                 xml.enabled = true
@@ -91,19 +91,19 @@ productFlavors.each { productFlavorName ->
             group = "Reporting"
             description = "Generate Jacoco coverage reports after running tests."
 
-            classDirectories = fileTree(
-                dir: "${project.buildDir}/intermediates/classes/${sourcePath}",
-                excludes: ['**/R*.class',
-                           '**/*$InjectAdapter.class',
-                           '**/*$ModuleAdapter.class',
-                           '**/*$Lambda$*.class',
-                           '**/BuildConfig.*',
-                           '**/R.class',
-                           '**/R$*.class',
-                           '**/*$ViewInjector*.*',
-                           '**/*$ViewBinder*.*',
-                           '**/Manifest*.*']
-            )
+            classDirectories.setFrom(fileTree(
+                    dir: "${project.buildDir}/intermediates/javac/${sourcePath}/classes",
+                    excludes: ['**/R*.class',
+                               '**/*$InjectAdapter.class',
+                               '**/*$ModuleAdapter.class',
+                               '**/*$Lambda$*.class',
+                               '**/BuildConfig.*',
+                               '**/R.class',
+                               '**/R$*.class',
+                               '**/*$ViewInjector*.*',
+                               '**/*$ViewBinder*.*',
+                               '**/Manifest*.*']
+            ))
 
             def coverageSourceDirs = [
                         "src/main/java",
@@ -111,17 +111,16 @@ productFlavors.each { productFlavorName ->
                         "src/$buildTypeName/java"
             ]
 
-            additionalSourceDirs = files(coverageSourceDirs)
-            sourceDirectories = files(coverageSourceDirs)
+            sourceDirectories.setFrom(files(coverageSourceDirs))
             
             File flavorFile, standardFile;
             flavorFile = new File("$buildDir/outputs/code-coverage/connected/flavors/${productFlavorName.toUpperCase()}/")
             standardFile = new File("$buildDir/outputs/code-coverage/connected/")
 
             if (!productFlavorName.isEmpty() && flavorFile.listFiles() != null)
-                executionData = files(flavorFile.listFiles())
+                executionData.setFrom(files(flavorFile.listFiles()))
             else if (productFlavorName.isEmpty() && standardFile.listFiles() != null)
-                executionData = files(standardFile.listFiles())
+                executionData.setFrom(files(standardFile.listFiles()))
 
             reports {
                 xml.enabled = true
