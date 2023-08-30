@@ -87,7 +87,7 @@ public class AndroidProject {
 		compileVersion = findCompileVersion();
 		logger.info("Compile version: " + compileVersion);
 		
-		unitTestTask = "testDebugDistUnitTest";//findTask(unitTaskPattern);
+		unitTestTask = "testDebugUnitTest";//findTask(unitTaskPattern);
 		instrumentationTestTask = "connectedDebugAndroidTest";//findTask(instrumentationTaskPattern);
 		activateTestLogging();
 
@@ -113,7 +113,12 @@ public class AndroidProject {
 	} 
 
 	private String findFlavor() throws Exception {
-		List<String> output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac"));
+		List<String> output = new ArrayList<String>();
+		try{
+			output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac"));
+		} catch (Exception e) {
+			output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes"));
+		}
 		ArrayList<String> flavors = new ArrayList<String>();
 
 		for(String entry : output){
@@ -202,15 +207,33 @@ public class AndroidProject {
 
 		AndroidToolsExecutorProcess.compileProject(projectAbsolutePath);
 
-		output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/"));
+		boolean javac = true;
+		try{
+			output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/"));
+		}catch (Exception e) {
+			output = FileSystemUtils.listContentsDirectory(new File(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/"));
+			javac = false;
+		}
 
 		dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug") + System.getProperty("path.separator");
+		//dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/generated/not_namespaced_r_class_sources/debug/processDebugResources") + System.getProperty("path.separator");
+		dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/") + System.getProperty("path.separator");
+
 		for(String entry : output){
-			if(entry.equals("debug"))
-				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/debug/classes/") + System.getProperty("path.separator");
+			if(entry.equals("debug")){
+				if(javac) {
+					dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/debug/classes/") + System.getProperty("path.separator");
+				}else {
+					dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/debug/") + System.getProperty("path.separator");
+				}
+			}
 
 			else if(!entry.equals("release")){
-				dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/" + entry + "/classes/") + System.getProperty("path.separator");
+				if(javac){
+					dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/javac/" + entry + "/classes/") + System.getProperty("path.separator");
+				}else {
+					dependencies += FileSystemUtils.fixPath(projectAbsolutePath + "/" + mainFolder + "/build/intermediates/classes/" + entry + "/debug/") + System.getProperty("path.separator");
+				}
 			}
 		}
 
