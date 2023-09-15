@@ -44,8 +44,10 @@ public class AndroidProject {
 	private boolean instrumentationRegressionTestCasesExist;
 	private Logger logger = Logger.getLogger(AndroidProject.class);
 
-	private Pattern unitTaskPattern = Pattern.compile("\\s*(test)([a-zA-Z0-9]+)(unittest)\\s-\\s(.*?)\\s*");
-	private Pattern instrumentationTaskPattern = Pattern.compile("\\s*(connected)(androidtest[a-zA-Z0-9]+|[a-zA-Z0-9]+androidtest)\\s-\\s(.*?)\\s*");
+	//private Pattern unitTaskPattern = Pattern.compile("\\s*(test)([a-zA-Z0-9]+)(unittest)\\s-\\s(.*?)\\s*");
+	private Pattern unitTaskPattern = Pattern.compile("^test[a-zA-Z]+debugunittest(?!coverage).*$");
+	//private Pattern instrumentationTaskPattern = Pattern.compile("\\s*(connected)(androidtest[a-zA-Z0-9]+|[a-zA-Z0-9]+androidtest)\\s-\\s(.*?)\\s*");
+	private Pattern instrumentationTaskPattern = Pattern.compile("^connected[a-zA-Z][a-zA-Z]*debugandroidtest(?!coverage).*$");
 
 	private AndroidProject() {}
 
@@ -87,8 +89,15 @@ public class AndroidProject {
 		compileVersion = findCompileVersion();
 		logger.info("Compile version: " + compileVersion);
 		
-		unitTestTask = "testDebugUnitTest";//findTask(unitTaskPattern);
-		instrumentationTestTask = "connectedDebugAndroidTest";//findTask(instrumentationTaskPattern);
+		unitTestTask = findTask(unitTaskPattern);
+		if(unitTestTask == null) {
+			unitTestTask = "testDebugUnitTest";
+		}
+
+		instrumentationTestTask = findTask(instrumentationTaskPattern);
+		if(instrumentationTestTask == null) {
+			instrumentationTestTask = "connectedDebugAndroidTest";
+		}
 		activateTestLogging();
 
 		subprojects = findSubprojects();

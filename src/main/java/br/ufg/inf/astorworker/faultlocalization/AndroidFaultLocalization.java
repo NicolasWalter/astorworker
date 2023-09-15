@@ -92,14 +92,13 @@ public class AndroidFaultLocalization {
 
 		for(String line : output){
 			if(line.contains("No tests found")){
-				logger.info("\"" + test + "\" is not a test!");
+				logger.info("\"" + test + "\" 	is not a test!");
 				return false;
 			}
 		}
 
 		// Running jacoco coverage
 		List<String> coverageOutput = AndroidProject.getInstance().runTask("--continue " + task + "Coverage", false);
-
 		// Checking if the task was skipped
 		for(String line : coverageOutput){
 			if(line.contains("SKIPPED")){

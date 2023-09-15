@@ -46,9 +46,13 @@ productFlavors.each { productFlavorName ->
         task "${testTaskName}Coverage" (type:JacocoReport) {
             group = "Reporting"
             description = "Generate Jacoco coverage reports on the ${sourceName.capitalize()} build."
+            def dirPath1 = new File("${project.buildDir}/intermediates/javac/${sourcePath}/classes")
+            def dirPath2 = new File("${project.buildDir}/build/intermediates/classes/debug")
+
+            def targetDirPath = dirPath1.exists() ? dirPath1 : dirPath2
 
             classDirectories.setFrom(fileTree(
-                    dir: "${project.buildDir}/intermediates/javac/${sourcePath}/classes",
+                    dir: targetDirPath,
                     excludes: ['**/R.class',
                                '**/R$*.class',
                                '**/*$ViewInjector*.*',
@@ -90,9 +94,12 @@ productFlavors.each { productFlavorName ->
         task "${testTaskName}Coverage" (type: JacocoReport) {
             group = "Reporting"
             description = "Generate Jacoco coverage reports after running tests."
+            def dirPath1 = new File("${project.buildDir}/intermediates/javac/${sourcePath}/classes")
+            def dirPath2 = new File("${project.buildDir}/build/intermediates/classes/debug")
 
+            def targetDirPath = dirPath1.exists() ? dirPath1 : dirPath2
             classDirectories.setFrom(fileTree(
-                    dir: "${project.buildDir}/intermediates/javac/${sourcePath}/classes",
+                    dir: targetDirPath,
                     excludes: ['**/R*.class',
                                '**/*$InjectAdapter.class',
                                '**/*$ModuleAdapter.class',
